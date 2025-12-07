@@ -3,6 +3,8 @@
 namespace App\Http\Requests\Transaction;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class BorrowTransactionRequest extends FormRequest
 {
@@ -33,5 +35,13 @@ class BorrowTransactionRequest extends FormRequest
             'due_date.after' => 'The due date must be after the borrow date.',
         ];
     }
-}
 
+    
+    protected function failedValidation(Validator $validator)
+    {
+        throw new HttpResponseException(response()->json([
+            'status' => false,
+            'errors' => $validator->errors()
+        ], 422));
+    }
+}

@@ -71,7 +71,7 @@ class TransactionController extends Controller
                 ], 404);
             }
             
-            // Check if item is available
+            // Check if item is availabl
             if ($item->status !== 'available') {
                 return response()->json([
                     'status' => false,
@@ -99,7 +99,7 @@ class TransactionController extends Controller
             // Update item quantity
             $item->quantity -= 1;
             if ($item->quantity == 0) {
-                $item->status = 'maintenance'; // Changed to match enum: available, borrowed, maintenance
+                $item->status = 'maintenance'; 
             }
             $item->save();
 
