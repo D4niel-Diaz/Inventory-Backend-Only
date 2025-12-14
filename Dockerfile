@@ -23,8 +23,18 @@ COPY . .
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 RUN composer install --no-interaction --optimize-autoloader
 
-# Expose port
+# Expose Laravel's serve port
 EXPOSE 8000
 
-# Run migrations, seeders, clear cache, then start Laravel server
-CMD sh -c "php artisan migrate --force && php artisan db:seed --force && php artisan config:clear && php artisan cache:clear && php artisan route:clear && php artisan serve --host=0.0.0.0 --port=8000"
+# CMD: Run migrations, seeders, clear cache, then start Laravel server
+CMD sh -c "\
+  echo 'Running migrations...' && \
+  php artisan migrate --force || echo 'Migration failed, maybe DB not ready' && \
+  echo 'Seeding database...' && \
+  php artisan db:seed --force || echo 'Seeding skipped' && \
+  php artisan config:clear && \
+  php artisan cache:clear && \
+  php artisan route:clear && \
+  echo 'Starting Laravel server...' && \
+  php artisan serve --host=0.0.0.0 --port=8000 \
+"
