@@ -23,15 +23,14 @@ COPY . .
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 RUN composer install --no-interaction --optimize-autoloader
 
-# Clear caches & optimize config/routes/views
-RUN php artisan config:clear \
-    && php artisan cache:clear \
-    && php artisan route:clear \
-    && php artisan view:clear \
-    && php artisan config:cache
-
 # Expose port (Render forwards traffic)
 EXPOSE 8080
 
-# Start PHP-FPM
-CMD ["php-fpm"]
+# Entrypoint: clear caches at runtime, then start PHP-FPM
+CMD sh -c "\
+    php artisan config:clear && \
+    php artisan cache:clear && \
+    php artisan route:clear && \
+    php artisan view:clear && \
+    php-fpm \
+"
