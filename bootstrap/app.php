@@ -15,6 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // Register CORS middleware for API routes
         $middleware->api(prepend: [
             \Illuminate\Http\Middleware\HandleCors::class,
+            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+            \Illuminate\Session\Middleware\StartSession::class,
         ]);
         
         $middleware->alias([

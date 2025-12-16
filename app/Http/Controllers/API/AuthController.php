@@ -44,10 +44,10 @@ class AuthController extends Controller
                 'profile_image' => $profileImagePath,
             ]);
 
-        // Assign default role
-        $user->assignRole('user');
+            $user->assignRole('user');
 
-            $token = $user->createToken('auth_token')->plainTextToken;
+            // Login the user to create an authenticated session
+            Auth::login($user);
 
             // Load roles efficiently and append roles_array
             try {
@@ -63,7 +63,6 @@ class AuthController extends Controller
                 'message' => 'User registered successfully',
                 'data' => [
                     'user' => $user,
-                    'token' => $token
                 ]
             ], 201);
         } catch (\Exception $e) {
@@ -112,11 +111,9 @@ class AuthController extends Controller
                 ], 403);
             }
 
-            Log::info('User authenticated, creating token', ['user_id' => $user->id]);
-            
-            $token = $user->createToken('auth_token')->plainTextToken;
-            
-            Log::info('Token created successfully', ['user_id' => $user->id]);
+            session()->regenerate();
+
+            Log::info('User authenticated, session regenerated', ['user_id' => $user->id]);
 
             // Skip role loading during login to avoid timeout - load it in /user endpoint instead
             // This makes login fast and reliable
@@ -128,8 +125,7 @@ class AuthController extends Controller
                 'status' => true,
                 'message' => 'Login successful',
                 'data' => [
-                    'user' => $user,
-                    'token' => $token
+                    'user' => $user
                 ]
             ]);
         } catch (\Exception $e) {
@@ -145,7 +141,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Logout user (revoke token)
+     * Logout user (invalidate session)
      *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
@@ -153,7 +149,9 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         try {
-            $request->user()->currentAccessToken()->delete();
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
 
             return response()->json([
                 'status' => true,
